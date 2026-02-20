@@ -36,12 +36,12 @@ export const PredictiveRiskCalculator = () => {
         <div className="glass-card flex flex-col p-8 h-full">
             <div className="flex items-center justify-between mb-10">
                 <div className="flex items-center gap-3">
-                    <div className="p-2 bg-slate-900 rounded-lg border border-slate-800">
-                        <Target className="w-5 h-5 text-blue-500" />
+                    <div className="p-2 bg-app-background rounded-lg border border-app-border">
+                        <Target className="w-5 h-5 text-app-primary" />
                     </div>
                     <div>
-                        <h2 className="text-sm font-black text-slate-100 uppercase tracking-widest">Risk Calculation</h2>
-                        <p className="text-[10px] text-slate-500 font-bold uppercase tracking-tighter">BNS Predictive Engine v4.0</p>
+                        <h2 className="text-sm font-black text-app-text uppercase tracking-widest">Risk Calculation</h2>
+                        <p className="text-[10px] text-app-text-dim font-bold uppercase tracking-tighter">BNS Predictive Engine v4.0</p>
                     </div>
                 </div>
 
@@ -78,15 +78,15 @@ export const PredictiveRiskCalculator = () => {
                 />
             </div>
 
-            <div className="mt-10 pt-8 border-t border-slate-800">
-                <div className="bg-[#020617] p-5 rounded-2xl border border-slate-800/50 relative overflow-hidden group">
-                    <div className="absolute top-0 right-0 w-32 h-32 bg-blue-500/5 blur-3xl rounded-full" />
-                    <code className="text-[10px] text-blue-400 font-black font-mono block mb-4 tracking-wider">
+            <div className="mt-10 pt-8 border-t border-app-border">
+                <div className="bg-app-background p-5 rounded-2xl border border-app-border relative overflow-hidden group">
+                    <div className="absolute top-0 right-0 w-32 h-32 bg-app-primary/5 blur-3xl rounded-full" />
+                    <code className="text-[10px] text-app-primary font-black font-mono block mb-4 tracking-wider">
                         R = Σ[w_i * v_i] + ε
                     </code>
                     <div className="flex items-start gap-3">
-                        <Info className="w-4 h-4 text-slate-600 shrink-0 mt-0.5" />
-                        <p className="text-[10px] leading-relaxed text-slate-500 font-medium">
+                        <Info className="w-4 h-4 text-app-text-dim shrink-0 mt-0.5" />
+                        <p className="text-[10px] leading-relaxed text-app-text-dim font-medium">
                             The algorithmic weights determine the prioritization of satellite data against historical BNS filings. Re-calibration is recommended every 12 hours.
                         </p>
                     </div>
@@ -100,12 +100,12 @@ const Slider = ({ label, icon: Icon, value, onChange }: any) => (
     <div className="space-y-4">
         <div className="flex items-center justify-between">
             <div className="flex items-center gap-2.5">
-                <div className="p-1.5 bg-slate-950 border border-slate-800 rounded flex items-center justify-center">
-                    <Icon className="w-3.5 h-3.5 text-slate-400 group-hover:text-blue-500 transition-colors" />
+                <div className="p-1.5 bg-app-background border border-app-border rounded flex items-center justify-center">
+                    <Icon className="w-3.5 h-3.5 text-app-text-dim group-hover:text-app-primary transition-colors" />
                 </div>
-                <span className="text-[11px] font-black text-slate-400 uppercase tracking-widest">{label}</span>
+                <span className="text-[11px] font-black text-app-text-dim uppercase tracking-widest">{label}</span>
             </div>
-            <span className="text-[11px] font-black text-blue-500 italic">{(value * 100).toFixed(0)}%</span>
+            <span className="text-[11px] font-black text-app-primary italic">{(value * 100).toFixed(0)}%</span>
         </div>
         <div className="relative group">
             <input
@@ -115,7 +115,7 @@ const Slider = ({ label, icon: Icon, value, onChange }: any) => (
                 step="0.05"
                 value={value}
                 onChange={(e) => onChange(parseFloat(e.target.value))}
-                className="w-full h-1.5 bg-slate-900 rounded-full appearance-none cursor-pointer accent-blue-600 group-hover:bg-slate-800 transition-all border border-slate-800"
+                className="w-full h-1.5 bg-app-card rounded-full appearance-none cursor-pointer accent-app-primary group-hover:bg-app-border transition-all border border-app-border"
             />
         </div>
     </div>

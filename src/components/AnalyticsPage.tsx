@@ -6,16 +6,16 @@ export const AnalyticsPage = () => {
     return (
         <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-700">
             {/* Analytics Header */}
-            <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 bg-slate-900/40 p-6 rounded-2xl border border-slate-800">
+            <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 bg-app-card/40 p-6 rounded-2xl border border-app-border">
                 <div>
-                    <h1 className="text-2xl font-black text-slate-100 tracking-tight">System Analytics</h1>
-                    <p className="text-sm text-slate-500 font-medium">Predictive model performance and BNS categorization metrics</p>
+                    <h1 className="text-2xl font-black text-app-text tracking-tight">System Analytics</h1>
+                    <p className="text-sm text-app-text-dim font-medium">Predictive model performance and BNS categorization metrics</p>
                 </div>
                 <div className="flex gap-3">
-                    <div className="px-4 py-2 bg-blue-600 rounded-lg text-xs font-black text-white cursor-pointer hover:bg-blue-500 transition-colors shadow-lg shadow-blue-500/20">
+                    <div className="px-4 py-2 bg-app-primary rounded-lg text-xs font-black text-white cursor-pointer hover:brightness-110 transition-colors shadow-lg shadow-app-primary/20">
                         GENERATE REPORT
                     </div>
-                    <div className="px-4 py-2 bg-slate-800 rounded-lg text-xs font-black text-slate-300 cursor-pointer hover:bg-slate-700 transition-colors border border-slate-700">
+                    <div className="px-4 py-2 bg-app-card rounded-lg text-xs font-black text-app-text-dim cursor-pointer hover:bg-app-background transition-colors border border-app-border">
                         FILTERS
                     </div>
                 </div>
@@ -26,10 +26,10 @@ export const AnalyticsPage = () => {
                 <div className="lg:col-span-2 glass-card p-8">
                     <div className="flex items-center justify-between mb-8">
                         <div className="flex items-center gap-3">
-                            <BarChart2 className="w-5 h-5 text-blue-500" />
-                            <h3 className="text-sm font-black text-slate-200 uppercase tracking-widest">BNS Section Frequency</h3>
+                            <BarChart2 className="w-5 h-5 text-app-primary" />
+                            <h3 className="text-sm font-black text-app-text uppercase tracking-widest">BNS Section Frequency</h3>
                         </div>
-                        <span className="text-[10px] font-bold text-slate-500 uppercase">Last 30 Days</span>
+                        <span className="text-[10px] font-bold text-app-text-dim uppercase">Last 30 Days</span>
                     </div>
 
                     <div className="space-y-6">
@@ -43,21 +43,21 @@ export const AnalyticsPage = () => {
 
                 {/* Accuracy Metrics */}
                 <div className="glass-card p-8 flex flex-col items-center justify-center text-center">
-                    <PieChart className="w-8 h-8 text-blue-500 mb-6" />
-                    <h3 className="text-sm font-black text-slate-200 uppercase tracking-widest mb-2">Model Confidence</h3>
+                    <PieChart className="w-8 h-8 text-app-primary mb-6" />
+                    <h3 className="text-sm font-black text-app-text uppercase tracking-widest mb-2">Model Confidence</h3>
                     <div className="relative w-40 h-40 flex items-center justify-center mb-6">
                         <svg className="w-full h-full -rotate-90">
-                            <circle cx="80" cy="80" r="70" fill="none" stroke="#1e293b" strokeWidth="12" />
-                            <circle cx="80" cy="80" r="70" fill="none" stroke="#3b82f6" strokeWidth="12"
+                            <circle cx="80" cy="80" r="70" fill="none" stroke="var(--border)" strokeWidth="12" />
+                            <circle cx="80" cy="80" r="70" fill="none" stroke="var(--primary)" strokeWidth="12"
                                 strokeDasharray="439.8" strokeDashoffset="44"
                                 className="drop-shadow-[0_0_8px_rgba(59,130,246,0.5)]" />
                         </svg>
                         <div className="absolute inset-0 flex flex-col items-center justify-center">
-                            <span className="text-4xl font-black text-slate-100 italic">90%</span>
-                            <span className="text-[10px] font-bold text-slate-500 uppercase">Precision</span>
+                            <span className="text-4xl font-black text-app-text italic">90%</span>
+                            <span className="text-[10px] font-bold text-app-text-dim uppercase">Precision</span>
                         </div>
                     </div>
-                    <p className="text-xs text-slate-500 leading-relaxed max-w-[200px]">
+                    <p className="text-xs text-app-text-dim leading-relaxed max-w-[200px]">
                         AI engine v4.0 showing 92% accuracy in predicting BNS 303 hotspots.
                     </p>
                 </div>
@@ -75,10 +75,10 @@ export const AnalyticsPage = () => {
 const AnalyticBar = ({ label, value, max, color }: any) => (
     <div className="space-y-2">
         <div className="flex justify-between items-end">
-            <span className="text-xs font-bold text-slate-400">{label}</span>
-            <span className="text-xs font-black text-slate-200">{value} cases</span>
+            <span className="text-xs font-bold text-app-text-dim">{label}</span>
+            <span className="text-xs font-black text-app-text">{value} cases</span>
         </div>
-        <div className="h-2 w-full bg-slate-900 rounded-full overflow-hidden border border-slate-800">
+        <div className="h-2 w-full bg-app-background rounded-full overflow-hidden border border-app-border">
             <div
                 className={cn("h-full rounded-full transition-all duration-1000 ease-out", color)}
                 style={{ width: `${(value / max) * 100}%` }}
@@ -88,16 +88,16 @@ const AnalyticBar = ({ label, value, max, color }: any) => (
 );
 
 const MetricCard = ({ icon: Icon, label, value, trend, color }: any) => (
-    <div className="glass-card p-6 border border-slate-800 hover:border-slate-700 transition-all">
+    <div className="glass-card p-6 border border-app-border hover:border-app-border/80 transition-all">
         <div className="flex items-center gap-3 mb-4">
-            <div className={cn("p-2 rounded-lg bg-slate-950", color)}>
+            <div className={cn("p-2 rounded-lg bg-app-background", color)}>
                 <Icon className="w-5 h-5" />
             </div>
-            <span className="text-[10px] font-black text-slate-500 uppercase tracking-widest">{label}</span>
+            <span className="text-[10px] font-black text-app-text-dim uppercase tracking-widest">{label}</span>
         </div>
         <div className="flex items-end justify-between">
-            <div className="text-2xl font-black text-slate-100">{value}</div>
-            <div className={cn("text-[10px] font-bold uppercase", trend.startsWith('+') ? 'text-emerald-500' : 'text-rose-500')}>
+            <div className="text-2xl font-black text-app-text">{value}</div>
+            <div className={cn("text-[10px] font-bold uppercase", trend.startsWith('+') ? 'text-emerald-500' : 'text-app-danger')}>
                 {trend}
             </div>
         </div>

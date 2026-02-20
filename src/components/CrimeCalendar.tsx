@@ -30,8 +30,8 @@ export const CrimeCalendar = () => {
                         <Calendar className="w-5 h-5 text-blue-500" />
                     </div>
                     <div>
-                        <h3 className="text-sm font-black tracking-widest text-slate-200 uppercase">Temporal Analysis</h3>
-                        <p className="text-[10px] text-slate-500 font-medium">BNS Activity Trend (24h Window)</p>
+                        <h3 className="text-sm font-black tracking-widest text-neutral-200 uppercase">Temporal Analysis</h3>
+                        <p className="text-[10px] text-neutral-500 font-medium">BNS Activity Trend (24h Window)</p>
                     </div>
                 </div>
                 <div className="flex items-center gap-2 px-3 py-1 bg-amber-500/10 border border-amber-500/20 rounded-full">
@@ -54,7 +54,7 @@ export const CrimeCalendar = () => {
                         <line
                             key={p}
                             x1="0" y1={height * p} x2={width} y2={height * p}
-                            stroke="#1e293b" strokeWidth="1" strokeDasharray="4 4"
+                            stroke="#171717" strokeWidth="1" strokeDasharray="4 4"
                         />
                     ))}
 
@@ -78,7 +78,7 @@ export const CrimeCalendar = () => {
                         return (
                             <circle
                                 key={i} cx={x} cy={y} r="4"
-                                className="fill-slate-950 stroke-blue-500 stroke-2 hover:r-6 transition-all cursor-pointer"
+                                className="fill-black stroke-blue-500 stroke-2 hover:r-6 transition-all cursor-pointer"
                             />
                         );
                     })}
@@ -87,27 +87,27 @@ export const CrimeCalendar = () => {
                 {/* X-Axis Labels */}
                 <div className="flex justify-between mt-4">
                     {['20:00', '22:00', '00:00', '02:00', '04:00', '06:00'].map(t => (
-                        <span key={t} className="text-[10px] font-bold text-slate-600 font-mono">{t}</span>
+                        <span key={t} className="text-[10px] font-bold text-neutral-600 font-mono">{t}</span>
                     ))}
                 </div>
             </div>
 
             <div className="grid grid-cols-2 gap-4 mt-2">
-                <div className="p-4 bg-slate-950/50 border border-slate-800 rounded-xl">
-                    <div className="flex items-center gap-2 mb-2 text-slate-500">
+                <div className="p-4 bg-black/50 border border-neutral-800 rounded-xl">
+                    <div className="flex items-center gap-2 mb-2 text-neutral-500">
                         <Clock className="w-3 h-3" />
                         <span className="text-[10px] font-bold uppercase tracking-wider">Peak Hour</span>
                     </div>
-                    <div className="text-xl font-black text-slate-200">03:14 AM</div>
+                    <div className="text-xl font-black text-neutral-200">03:14 AM</div>
                     <div className="text-[10px] text-rose-500 font-bold mt-1">+14% vs Average</div>
                 </div>
-                <div className="p-4 bg-slate-950/50 border border-slate-800 rounded-xl">
-                    <div className="flex items-center gap-2 mb-2 text-slate-500">
+                <div className="p-4 bg-black/50 border border-neutral-800 rounded-xl">
+                    <div className="flex items-center gap-2 mb-2 text-neutral-500">
                         <TrendingUp className="w-3 h-3" />
                         <span className="text-[10px] font-bold uppercase tracking-wider">Confidence</span>
                     </div>
                     <div className="text-xl font-black text-emerald-500">92.4%</div>
-                    <div className="text-[10px] text-slate-500 font-bold mt-1">AI Logic v2.4</div>
+                    <div className="text-[10px] text-neutral-500 font-bold mt-1">AI Logic v2.4</div>
                 </div>
             </div>
         </div>
