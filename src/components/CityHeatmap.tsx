@@ -1,8 +1,9 @@
 import React, { useState, useEffect } from 'react';
-import { MapContainer, TileLayer, Marker, Popup } from 'react-leaflet';
+import { MapContainer, TileLayer, Marker, Popup, Circle } from 'react-leaflet';
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
-import { Radar, Crosshair } from 'lucide-react';
+import { Radar, Crosshair, MapPin, Zap, Activity, Shield, Target, AlertTriangle } from 'lucide-react';
+import { MapLayerSelector } from './MapLayerSelector';
 
 // FIX FOR LEAFLET MARKER ICONS
 import markerIcon from 'leaflet/dist/images/marker-icon.png';
@@ -16,27 +17,114 @@ const DefaultIcon = L.icon({
 });
 L.Marker.prototype.options.icon = DefaultIcon;
 
-const createPulsingIcon = (risk: string) => {
-    const color = risk === 'Critical' ? '#f43f5e' : risk === 'High' ? '#f59e0b' : '#3b82f6';
+// --- ADVANCED TACTICAL MARKERS ---
+
+// 1. PREDICTIVE RISK (Orion Lime) - "The Minority Report" Style
+const createPredictiveIcon = (label: string) => {
+    const color = '#00ffc2';
     return L.divIcon({
-        className: 'custom-pulsing-marker',
+        className: 'predictive-container',
         html: `
-            <div style="position: relative; display: flex; align-items: center; justify-content: center;">
-                <div style="position: absolute; width: 35px; height: 35px; background-color: ${color}; border-radius: 50%; animation: pulse-marker 2s infinite; opacity: 0.4;"></div>
-                <div style="width: 12px; height: 12px; background-color: ${color}; border-radius: 50%; border: 2px solid white; box-shadow: 0 0 15px ${color}80;"></div>
+            <div class="predictive-marker-v2">
+                <!-- Corner Brackets -->
+                <div class="bracket top-left"></div>
+                <div class="bracket top-right"></div>
+                <div class="bracket bottom-left"></div>
+                <div class="bracket bottom-right"></div>
+                
+                <!-- Rotating Crosshair -->
+                <div class="radar-circle"></div>
+                <div class="crosshair-center">
+                    <div class="cross-v"></div>
+                    <div class="cross-h"></div>
+                </div>
+                
+                <!-- Data Tag -->
+                <div class="data-tag">
+                    <span class="tag-title">PREDICTIVE NODE</span>
+                    <span class="tag-value">${label.split(':')[0]}</span>
+                </div>
+                
+                <!-- Scanning Effect -->
+                <div class="scanning-vertical"></div>
             </div>
         `,
-        iconSize: [40, 40],
-        iconAnchor: [20, 20]
+        iconSize: [80, 80],
+        iconAnchor: [40, 40]
     });
 };
 
-export const CityHeatmap = () => {
+// 2. CRIME HOTSPOTS (Cygnus Magenta) - "Strategic Conflict" Style
+const createHotspotIcon = (risk: string) => {
+    const color = risk === 'Critical' ? '#e900ff' : '#f59e0b';
+    return L.divIcon({
+        className: 'hotspot-container',
+        html: `
+            <div class="hotspot-marker-v2">
+                <div class="core-hexagon" style="background-color: ${color};">
+                    <div class="glitch-layer"></div>
+                </div>
+                <div class="surge-ring" style="border-color: ${color};"></div>
+                <div class="surge-ring-outer" style="border-color: ${color}40;"></div>
+            </div>
+        `,
+        iconSize: [50, 50],
+        iconAnchor: [25, 25]
+    });
+};
+
+// 3. CRIME LOCATIONS (Helios Blue) - "Active Incident" Style
+const createLocationIcon = () => {
+    const color = '#00a6ff';
+    return L.divIcon({
+        className: 'location-container',
+        html: `
+            <div class="location-marker-v2">
+                <div class="pulse-dot" style="background-color: ${color};"></div>
+                <div class="dot-base" style="background-color: ${color};"></div>
+            </div>
+        `,
+        iconSize: [24, 24],
+        iconAnchor: [12, 12]
+    });
+};
+
+interface CityHeatmapProps {
+    darkMode?: boolean;
+}
+
+export const CityHeatmap = ({ darkMode = true }: CityHeatmapProps) => {
     const position: [number, number] = [19.0473, 72.8634];
+    const [activeLayer, setActiveLayer] = useState('predictive');
+
     const [hotspots] = useState([
         { id: 1, pos: [19.0480, 72.8640], label: "BNS §111: Organized Crime Hub", risk: "Critical" },
         { id: 2, pos: [19.0430, 72.8590], label: "BNS §303: Larceny Cluster", risk: "High" },
-        { id: 3, pos: [19.0520, 72.8700], label: "BNS §103: Inquiry Zone", risk: "Medium" },
+    ]);
+
+    const [locations] = useState([
+        { id: 101, pos: [19.0460, 72.8620], label: "BNS §379: Theft Report" },
+        { id: 102, pos: [19.0490, 72.8650], label: "BNS §323: Assault Report" },
+        { id: 104, pos: [19.0510, 72.8680], label: "BNS §354: Molestation" },
+    ]);
+
+    const [predictiveZones] = useState([
+        {
+            id: 201,
+            pos: [19.0500, 72.8700],
+            radius: 400,
+            risk: 'High',
+            label: 'Priority Alpha: 92% Confidence',
+            details: 'Significant pattern match in BNS §303. Recurrence expected within 12h.'
+        },
+        {
+            id: 202,
+            pos: [19.0400, 72.8550],
+            radius: 350,
+            risk: 'Medium',
+            label: 'Priority Beta: 74% Confidence',
+            details: 'Anomalous movement detected in Zone 7. Monitoring active uplink.'
+        },
     ]);
 
     const [isMounted, setIsMounted] = useState(false);
@@ -44,118 +132,339 @@ export const CityHeatmap = () => {
         setIsMounted(true);
     }, []);
 
-    // Explicit height is CRITICAL for Leaflet
     const mapContainerStyle = {
-        height: '550px',
+        height: '620px',
         width: '100%',
-        backgroundColor: '#020617'
+        backgroundColor: darkMode ? '#000000' : '#f8fafc'
     };
 
     if (!isMounted) {
-        return <div style={{ height: '550px', width: '100%' }} className="bg-[#020617] animate-pulse rounded-2xl border border-slate-800" />;
+        return <div style={{ height: '620px', width: '100%' }} className="bg-app-background animate-pulse rounded-2xl border border-app-border" />;
     }
 
+    const tileUrl = darkMode
+        ? "https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png"
+        : "https://{s}.basemaps.cartocdn.com/rastertiles/light_all/{z}/{x}/{y}.png";
+
     return (
-        <div className="w-full relative bg-[#020617] rounded-2xl overflow-hidden shadow-2xl border border-slate-800">
+        <div className="w-full relative bg-app-background rounded-3xl overflow-hidden shadow-[0_0_50px_rgba(0,0,0,0.3)] border border-app-border group">
             <MapContainer
+                key={darkMode ? 'dark-map' : 'light-map'}
                 center={position}
                 zoom={14}
                 style={mapContainerStyle}
-                zoomControl={true}
+                zoomControl={false}
                 attributionControl={false}
                 scrollWheelZoom={true}
-                doubleClickZoom={true}
             >
                 <TileLayer
-                    url="https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png"
+                    key={darkMode ? 'dark-layer' : 'light-layer'}
+                    url={tileUrl}
                 />
 
-                {hotspots.map(spot => (
-                    <Marker
-                        key={spot.id}
-                        position={spot.pos as [number, number]}
-                        icon={createPulsingIcon(spot.risk)}
-                    >
-                        <Popup className="custom-popup">
-                            <div className="p-2 min-w-[150px]">
-                                <h3 className="text-[10px] font-black uppercase tracking-widest text-blue-400 mb-1">Target Intelligence</h3>
-                                <p className="text-xs font-bold leading-tight text-slate-200">{spot.label}</p>
+                {/* Layer 1: Crime Locations */}
+                {activeLayer === 'locations' && locations.map(loc => (
+                    <Marker key={loc.id} position={loc.pos as [number, number]} icon={createLocationIcon()}>
+                        <Popup className="custom-popup-v2">
+                            <div className="popup-terminal">
+                                <div className="terminal-header" style={{ borderColor: '#00a6ff' }}>
+                                    <Activity className="w-3 h-3 text-[#00a6ff]" />
+                                    <span>INCIDENT FEED</span>
+                                </div>
+                                <p className="terminal-content">{loc.label}</p>
                             </div>
                         </Popup>
                     </Marker>
                 ))}
+
+                {/* Layer 2: Crime Hotspots */}
+                {activeLayer === 'hotspots' && hotspots.map(spot => (
+                    <Marker key={spot.id} position={spot.pos as [number, number]} icon={createHotspotIcon(spot.risk)}>
+                        <Popup className="custom-popup-v2">
+                            <div className="popup-terminal">
+                                <div className="terminal-header" style={{ borderColor: '#e900ff' }}>
+                                    <Shield className="w-3 h-3 text-[#e900ff]" />
+                                    <span>THREAT DETECTED</span>
+                                </div>
+                                <h2 className="terminal-title">{spot.label}</h2>
+                                <div className="terminal-meta">
+                                    <span className="risk-tag" style={{ backgroundColor: '#e900ff20', color: '#e900ff' }}>STATUS: CRITICAL</span>
+                                </div>
+                            </div>
+                        </Popup>
+                    </Marker>
+                ))}
+
+                {/* Layer 3: Predictive Risk - COMPLETELY REFINED */}
+                {activeLayer === 'predictive' && predictiveZones.map(zone => (
+                    <React.Fragment key={zone.id}>
+                        {/* Static Influence Circle */}
+                        <Circle
+                            center={zone.pos as [number, number]}
+                            radius={zone.radius}
+                            pathOptions={{
+                                fillColor: '#00ffc2',
+                                fillOpacity: 0.05,
+                                color: '#00ffc2',
+                                weight: 1,
+                                dashArray: '4, 8'
+                            }}
+                        />
+                        {/* Animated Pulse Circle */}
+                        <Circle
+                            center={zone.pos as [number, number]}
+                            radius={zone.radius * 0.7}
+                            pathOptions={{
+                                fillColor: '#00ffc2',
+                                fillOpacity: 0.1,
+                                color: '#00ffc2',
+                                weight: 2,
+                                className: 'animated-circle'
+                            }}
+                        />
+                        <Marker position={zone.pos as [number, number]} icon={createPredictiveIcon(zone.label)}>
+                            <Popup className="custom-popup-v2">
+                                <div className="popup-terminal predictive">
+                                    <div className="terminal-header">
+                                        <Zap className="w-3 h-3 text-[#00ffc2]" />
+                                        <span>AI PREDICTIVE ANALYSIS</span>
+                                    </div>
+                                    <div className="terminal-body">
+                                        <h2 className="terminal-title">{zone.label}</h2>
+                                        <p className="terminal-desc">{zone.details}</p>
+                                        <div className="terminal-stats">
+                                            <div className="stat-item">
+                                                <span className="label">PRECISION</span>
+                                                <span className="value">98.2%</span>
+                                            </div>
+                                            <div className="stat-item">
+                                                <span className="label">UPLINK</span>
+                                                <span className="value">ACTIVE</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div className="terminal-footer">
+                                        SECURE_UPLINK_ESTABLISHED_...
+                                    </div>
+                                </div>
+                            </Popup>
+                        </Marker>
+                    </React.Fragment>
+                ))}
             </MapContainer>
 
-            {/* Overlays */}
+            {/* Tactical Overlays */}
+            <div className="absolute top-8 right-8 z-[1000]">
+                <MapLayerSelector activeLayer={activeLayer} onChange={setActiveLayer} />
+            </div>
+
             <div className="absolute top-8 left-8 z-[1000] pointer-events-none">
-                <div className="bg-slate-950/80 backdrop-blur-xl border border-slate-800 p-5 rounded-2xl shadow-2xl border-l-4 border-l-blue-500">
+                <div className="bg-app-background/95 backdrop-blur-3xl border border-app-border p-6 rounded-2xl shadow-2xl border-l-[6px] border-l-app-primary flex flex-col gap-2 min-w-[240px]">
                     <div className="flex items-center gap-4">
-                        <Radar className="w-6 h-6 text-blue-500 animate-spin-slow" />
+                        <div className="relative">
+                            <Radar className="w-8 h-8 text-app-primary animate-spin-slow" />
+                            <div className="absolute inset-0 bg-app-primary/20 blur-lg rounded-full animate-pulse" />
+                        </div>
                         <div>
-                            <span className="text-[10px] font-black tracking-[0.2em] text-slate-200 uppercase text-xs">Live Intelligence Hub</span>
+                            <span className="text-[12px] font-black tracking-[0.3em] text-app-text uppercase">TACTICAL NODE 07</span>
                             <div className="flex items-center gap-2 mt-1">
-                                <div className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
-                                <span className="text-[9px] text-slate-500 font-bold uppercase">Sector: Mumbai-Sion Strategic</span>
+                                <div className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse shadow-[0_0_8px_#10b981]" />
+                                <span className="text-[10px] text-app-text-dim font-black uppercase tracking-widest">{activeLayer} MONITORING</span>
                             </div>
                         </div>
                     </div>
                 </div>
             </div>
 
-            <MapEffects />
+            {/* Custom Tactical Zoom */}
+            <div className="absolute bottom-8 left-8 z-[1000] flex flex-col gap-3">
+                <button className="w-12 h-12 bg-app-card/80 backdrop-blur-xl border border-app-border rounded-xl flex items-center justify-center text-app-text hover:bg-app-primary hover:text-white transition-all shadow-2xl group/zoom">
+                    <Target className="w-5 h-5 group-hover/zoom:scale-110 transition-transform" />
+                </button>
+                <div className="flex flex-col bg-app-card/80 backdrop-blur-xl border border-app-border rounded-xl overflow-hidden shadow-2xl">
+                    <button className="w-12 h-12 flex items-center justify-center text-xl font-black text-app-text-dim hover:bg-app-primary hover:text-white transition-all border-b border-app-border">+</button>
+                    <button className="w-12 h-12 flex items-center justify-center text-xl font-black text-app-text-dim hover:bg-app-primary hover:text-white transition-all">-</button>
+                </div>
+            </div>
 
             <style>{`
-                .animate-spin-slow { animation: spin 12s linear infinite; }
-                @keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
-                @keyframes pulse-marker {
-                    0% { transform: scale(0.5); opacity: 0.8; }
+                /* --- PREDICTIVE RISK MARKER (COMPLETELY REFINED) --- */
+                .predictive-marker-v2 {
+                    position: relative;
+                    width: 100%;
+                    height: 100%;
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                }
+
+                .bracket {
+                    position: absolute;
+                    width: 15px;
+                    height: 15px;
+                    border: 2.5px solid #00ffc2;
+                    opacity: 0.8;
+                }
+                .top-left { top: 10px; left: 10px; border-right: 0; border-bottom: 0; }
+                .top-right { top: 10px; right: 10px; border-left: 0; border-bottom: 0; }
+                .bottom-left { bottom: 10px; left: 10px; border-right: 0; border-top: 0; }
+                .bottom-right { bottom: 10px; right: 10px; border-left: 0; border-top: 0; }
+
+                .radar-circle {
+                    position: absolute;
+                    width: 40px;
+                    height: 40px;
+                    border: 1px dashed #00ffc2;
+                    border-radius: 50%;
+                    animation: orbit-spin 4s infinite linear;
+                    opacity: 0.4;
+                }
+
+                .crosshair-center {
+                    position: relative;
+                    width: 12px;
+                    height: 12px;
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                }
+                .cross-v, .cross-h {
+                    position: absolute;
+                    background-color: #00ffc2;
+                    box-shadow: 0 0 10px #00ffc2;
+                }
+                .cross-v { width: 2px; height: 100%; }
+                .cross-h { width: 100%; height: 2px; }
+
+                .data-tag {
+                    position: absolute;
+                    top: -25px;
+                    background: rgba(0, 255, 194, 0.1);
+                    border: 1px solid #00ffc2;
+                    padding: 2px 6px;
+                    border-radius: 4px;
+                    display: flex;
+                    flex-direction: column;
+                    align-items: center;
+                    backdrop-filter: blur(4px);
+                    animation: float-y 3s infinite ease-in-out;
+                }
+                .tag-title { font-size: 6px; font-weight: 900; color: #00ffc2; opacity: 0.7; }
+                .tag-value { font-size: 8px; font-weight: 900; color: white; white-space: nowrap; }
+
+                .scanning-vertical {
+                    position: absolute;
+                    width: 50px;
+                    height: 2px;
+                    background: linear-gradient(to right, transparent, #00ffc2, transparent);
+                    opacity: 0.3;
+                    animation: scan-vertical 2s infinite linear;
+                }
+
+                /* --- HOTSPOT MARKER --- */
+                .core-hexagon {
+                    width: 16px;
+                    height: 16px;
+                    clip-path: polygon(50% 0%, 100% 25%, 100% 75%, 50% 100%, 0% 75%, 0% 25%);
+                    position: relative;
+                    z-index: 10;
+                }
+                .surge-ring {
+                    position: absolute;
+                    width: 30px;
+                    height: 30px;
+                    border: 2px solid;
+                    border-radius: 50%;
+                    animation: pulse-expand 2s infinite cubic-bezier(0, 0, 0.2, 1);
+                }
+
+                /* --- LOCATION MARKER (HELIOS BLUE) --- */
+                .location-marker-v2 {
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                    width: 100%;
+                    height: 100%;
+                    position: relative;
+                }
+                .pulse-dot {
+                    position: absolute;
+                    width: 24px;
+                    height: 24px;
+                    border-radius: 50%;
+                    opacity: 0;
+                    animation: pulse-expand 1.5s infinite;
+                }
+                .dot-base {
+                    width: 8px;
+                    height: 8px;
+                    border-radius: 50%;
+                    z-index: 2;
+                    position: relative;
+                    border: 1.5px solid white;
+                    box-shadow: 0 0 10px rgba(0, 166, 255, 0.5);
+                }
+
+                /* --- TERMINAL POPUPS --- */
+                .popup-terminal {
+                    background: #0a0a0a;
+                    padding: 0;
+                    border: 1px solid var(--app-border);
+                    border-radius: 12px;
+                    overflow: hidden;
+                    box-shadow: 0 25px 50px rgba(0,0,0,0.8);
+                }
+                .terminal-header {
+                    padding: 8px 12px;
+                    background: rgba(255,255,255,0.03);
+                    border-bottom: 2px solid;
+                    display: flex;
+                    align-items: center;
+                    gap: 8px;
+                }
+                .terminal-header span { font-size: 9px; font-weight: 900; color: white; letter-spacing: 0.15em; }
+                
+                .terminal-body { padding: 12px; }
+                .terminal-title { font-size: 14px; font-weight: 900; color: white; margin-bottom: 6px; }
+                .terminal-desc { font-size: 10px; color: #94a3b8; line-height: 1.5; margin-bottom: 12px; }
+                
+                .terminal-stats { display: flex; gap: 12px; border-top: 1px solid rgba(255,255,255,0.05); padding-top: 10px; }
+                .stat-item { display: flex; flex-direction: column; }
+                .stat-item .label { font-size: 7px; color: #64748b; font-weight: 900; }
+                .stat-item .value { font-size: 10px; color: white; font-weight: 900; }
+                
+                .terminal-footer { font-size: 8px; color: #475569; padding: 4px 12px; font-family: monospace; }
+                
+                .predictive .terminal-header { border-color: #00ffc2; }
+                
+                /* ANIMATIONS */
+                @keyframes orbit-spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
+                @keyframes scan-vertical {
+                    0% { transform: translateY(-25px); opacity: 0; }
+                    50% { opacity: 0.5; }
+                    100% { transform: translateY(25px); opacity: 0; }
+                }
+                @keyframes float-y {
+                    0% { transform: translateY(0); }
+                    50% { transform: translateY(-5px); }
+                    100% { transform: translateY(0); }
+                }
+                @keyframes pulse-expand {
+                    0% { transform: scale(0.5); opacity: 0.9; }
                     100% { transform: scale(2); opacity: 0; }
                 }
-                .leaflet-container { background: #020617 !important; outline: none; }
-                .custom-popup .leaflet-popup-content-wrapper {
-                    background: #020617 !important;
-                    color: #fff !important;
-                    border: 1px solid #1e293b !important;
-                    border-radius: 8px;
+                .animated-circle { animation: dash-move 20s linear infinite; }
+                @keyframes dash-move {
+                    0% { stroke-dashoffset: 0; }
+                    100% { stroke-dashoffset: 1000; }
                 }
-                .custom-popup .leaflet-popup-tip { background: #1e293b !important; }
 
-                /* Custom Zoom Control Styling */
-                .leaflet-control-zoom {
-                    border: 1px solid #1e293b !important;
-                    box-shadow: 0 10px 30px rgba(0,0,0,0.5) !important;
-                    margin-top: 150px !important; /* Move it down below the overlay */
-                    margin-left: 32px !important;
-                }
-                .leaflet-control-zoom-in, .leaflet-control-zoom-out {
-                    background-color: #020617 !important;
-                    color: #64748b !important;
-                    border: none !important;
-                    border-bottom: 1px solid #1e293b !important;
-                    transition: all 0.2s ease;
-                }
-                .leaflet-control-zoom-in:hover, .leaflet-control-zoom-out:hover {
-                    background-color: #0f172a !important;
-                    color: #3b82f6 !important;
-                }
-                .leaflet-bar { border: none !important; }
+                .leaflet-container { background: ${darkMode ? '#000000' : '#f8fafc'} !important; outline: none; }
+                .custom-popup-v2 .leaflet-popup-content-wrapper { background: transparent !important; box-shadow: none !important; padding: 0 !important; }
+                .custom-popup-v2 .leaflet-popup-content { margin: 0 !important; width: 220px !important; }
+                .custom-popup-v2 .leaflet-popup-tip { display: none; }
+                .custom-popup-v2 { margin-bottom: 20px !important; }
             `}</style>
         </div>
     );
 };
-
-const MapEffects = () => (
-    <div className="absolute inset-0 z-[400] pointer-events-none overflow-hidden">
-        <div className="absolute inset-0 bg-[linear-gradient(rgba(59,130,246,0.03)_1px,transparent_1px),linear-gradient(90deg,rgba(59,130,246,0.03)_1px,transparent_1px)] bg-[size:30px_30px]" />
-        <div className="w-full h-[1px] bg-blue-500/20 absolute top-0 animate-scanning" />
-        <style>{`
-            @keyframes animate-scanning {
-                0% { top: 0%; opacity: 0; }
-                15% { opacity: 1; }
-                85% { opacity: 1; }
-                100% { top: 100%; opacity: 0; }
-            }
-            .animate-scanning { animation: animate-scanning 4s linear infinite; }
-        `}</style>
-    </div>
-);
