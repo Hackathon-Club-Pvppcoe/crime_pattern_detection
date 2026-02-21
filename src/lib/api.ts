@@ -1,4 +1,4 @@
-const API_BASE_URL = 'https://crime-pattern-backend.onrender.com';
+const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000';
 
 export const fetchHotspots = async () => {
     const response = await fetch(`${API_BASE_URL}/hotspots`);
