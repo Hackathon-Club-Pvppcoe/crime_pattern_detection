@@ -1,24 +1,32 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Search, Filter, Download, MoreVertical, AlertCircle } from 'lucide-react';
 import { cn } from '../lib/utils';
-
-const BNS_DATA = [
-    { id: 'FIR-2023-001', section: '111', type: 'Organized Crime', victim: 'Govt. Property', status: 'Inquiry', risk: 'High' },
-    { id: 'FIR-2023-002', section: '303', type: 'Larceny', victim: 'Individual', status: 'Arrested', risk: 'Medium' },
-    { id: 'FIR-2023-003', section: '111', type: 'Organized Crime', victim: 'Private Enterprise', status: 'Pending', risk: 'Critical' },
-    { id: 'FIR-2023-004', section: '304', type: 'Burglary', victim: 'Individual', status: 'Closed', risk: 'Low' },
-    { id: 'FIR-2023-005', section: '70', type: 'Sexual Offences', victim: 'Individual', status: 'Trial', risk: 'High' },
-    { id: 'FIR-2023-006', section: '111', type: 'Organized Crime', victim: 'Public Infrastructure', status: 'Inquiry', risk: 'High' },
-];
+import { fetchFIRs } from '../lib/api';
 
 export const BNSIntelligenceHub = () => {
     const [search, setSearch] = useState('');
     const [filter, setFilter] = useState('All');
+    const [bnsData, setBnsData] = useState<any[]>([]);
+    const [loading, setLoading] = useState(true);
 
-    const filteredData = BNS_DATA.filter(item => {
-        const matchesSearch = item.id.toLowerCase().includes(search.toLowerCase()) ||
-            item.type.toLowerCase().includes(search.toLowerCase());
-        const matchesFilter = filter === 'All' || item.type === filter;
+    useEffect(() => {
+        const loadFIRs = async () => {
+            try {
+                const data = await fetchFIRs();
+                setBnsData(data);
+            } catch (error) {
+                console.error("Error loading FIRs:", error);
+            } finally {
+                setLoading(false);
+            }
+        };
+        loadFIRs();
+    }, []);
+
+    const filteredData = bnsData.filter(item => {
+        const matchesSearch = item.FIR_UID.toLowerCase().includes(search.toLowerCase()) ||
+            item.BNS_Section.toString().includes(search.toLowerCase());
+        const matchesFilter = filter === 'All' || item.Weapon_Type === filter;
         return matchesSearch && matchesFilter;
     });
 
@@ -70,24 +78,24 @@ export const BNSIntelligenceHub = () => {
                         </tr>
                     </thead>
                     <tbody className="divide-y divide-app-border">
-                        {filteredData.map((item) => (
-                            <tr key={item.id} className="hover:bg-app-primary/5 transition-colors group">
-                                <td className="px-6 py-4 text-sm font-medium text-app-text">{item.id}</td>
+                        {filteredData.map((item: any) => (
+                            <tr key={item.FIR_UID} className="hover:bg-app-primary/5 transition-colors group">
+                                <td className="px-6 py-4 text-sm font-medium text-app-text">{item.FIR_UID}</td>
                                 <td className="px-6 py-4">
-                                    <span className="px-2 py-1 bg-app-card rounded text-[11px] font-mono text-app-primary">§ {item.section}</span>
+                                    <span className="px-2 py-1 bg-app-card rounded text-[11px] font-mono text-app-primary">§ {item.BNS_Section}</span>
                                 </td>
-                                <td className="px-6 py-4 text-sm text-app-text-dim">{item.type}</td>
+                                <td className="px-6 py-4 text-sm text-app-text-dim">{item.Weapon_Type}</td>
                                 <td className="px-6 py-4 text-sm">
                                     <span className={cn(
                                         "flex items-center gap-1.5",
-                                        item.status === 'Arrested' ? 'text-emerald-500' : 'text-amber-500'
+                                        item.Status === 'Arrested' ? 'text-emerald-500' : 'text-amber-500'
                                     )}>
-                                        <div className={cn("w-1.5 h-1.5 rounded-full", item.status === 'Arrested' ? 'bg-emerald-500' : 'bg-amber-500')} />
-                                        {item.status}
+                                        <div className={cn("w-1.5 h-1.5 rounded-full", item.Status === 'Arrested' ? 'bg-emerald-500' : 'bg-amber-500')} />
+                                        {item.Status}
                                     </span>
                                 </td>
                                 <td className="px-6 py-4">
-                                    <Badge risk={item.risk} />
+                                    <Badge risk={item.Risk} />
                                 </td>
                                 <td className="px-6 py-4 text-center">
                                     <button className="p-1 hover:bg-app-card rounded transition-colors text-app-text-dim">
