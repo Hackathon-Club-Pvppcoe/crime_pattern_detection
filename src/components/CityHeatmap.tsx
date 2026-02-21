@@ -89,42 +89,52 @@ const createLocationIcon = () => {
     });
 };
 
+import { fetchHotspots, fetchPredictiveZones } from '../lib/api';
+
 interface CityHeatmapProps {
     darkMode?: boolean;
 }
 
 export const CityHeatmap = ({ darkMode = true }: CityHeatmapProps) => {
     const position: [number, number] = [19.0473, 72.8634];
-    const [activeLayer, setActiveLayer] = useState('predictive');
+    const [activeLayer, setActiveLayer] = useState('hotspots');
+    const [hotspots, setHotspots] = useState<any[]>([]);
+    const [predictiveZones, setPredictiveZones] = useState<any[]>([]);
+    const [loading, setLoading] = useState(true);
 
-    const [hotspots] = useState([
-        { id: 1, pos: [19.0480, 72.8640], label: "BNS §111: Organized Crime Hub", risk: "Critical" },
-        { id: 2, pos: [19.0430, 72.8590], label: "BNS §303: Larceny Cluster", risk: "High" },
-    ]);
+    useEffect(() => {
+        const loadMapData = async () => {
+            try {
+                const [hotspotData, zoneData] = await Promise.all([
+                    fetchHotspots(),
+                    fetchPredictiveZones()
+                ]);
+
+                // Map Hotspots
+                const mappedHotspots = hotspotData.map((d: any, i: number) => ({
+                    id: i,
+                    pos: [d.Latitude, d.Longitude],
+                    label: `Risk Node: ${d.Risk_Score}`,
+                    risk: d.Risk_Score > 7.0 ? 'Critical' : d.Risk_Score > 4.0 ? 'High' : 'Medium',
+                    score: d.Risk_Score
+                }));
+                setHotspots(mappedHotspots);
+
+                // Map Predictive Zones
+                setPredictiveZones(zoneData);
+            } catch (error) {
+                console.error("Error loading map data:", error);
+            } finally {
+                setLoading(false);
+            }
+        };
+        loadMapData();
+    }, []);
 
     const [locations] = useState([
-        { id: 101, pos: [19.0460, 72.8620], label: "BNS §379: Theft Report" },
-        { id: 102, pos: [19.0490, 72.8650], label: "BNS §323: Assault Report" },
-        { id: 104, pos: [19.0510, 72.8680], label: "BNS §354: Molestation" },
-    ]);
-
-    const [predictiveZones] = useState([
-        {
-            id: 201,
-            pos: [19.0500, 72.8700],
-            radius: 400,
-            risk: 'High',
-            label: 'Priority Alpha: 92% Confidence',
-            details: 'Significant pattern match in BNS §303. Recurrence expected within 12h.'
-        },
-        {
-            id: 202,
-            pos: [19.0400, 72.8550],
-            radius: 350,
-            risk: 'Medium',
-            label: 'Priority Beta: 74% Confidence',
-            details: 'Anomalous movement detected in Zone 7. Monitoring active uplink.'
-        },
+        { id: 101, pos: [18.9221, 72.8337], label: "BNS §379: Theft Report" },
+        { id: 102, pos: [19.2550, 72.8650], label: "BNS §323: Assault Report" },
+        { id: 104, pos: [19.0750, 72.8650], label: "BNS §354: Molestation" },
     ]);
 
     const [isMounted, setIsMounted] = useState(false);

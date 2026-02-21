@@ -1,8 +1,50 @@
-import React from 'react';
-import { TrendingUp, Target, Hash, AlertCircle, PieChart, BarChart2, Activity } from 'lucide-react';
+import React, { useState, useEffect } from 'react';
+import { TrendingUp, Target, PieChart, BarChart2, Activity } from 'lucide-react';
 import { cn } from '../lib/utils';
+import { fetchBNSStats } from '../lib/api';
 
 export const AnalyticsPage = () => {
+    const [stats, setStats] = React.useState<Record<string, number>>({});
+    const [loading, setLoading] = React.useState(true);
+
+    React.useEffect(() => {
+        const loadStats = async () => {
+            try {
+                const data = await fetchBNSStats();
+                setStats(data);
+            } catch (error) {
+                console.error("Error loading stats:", error);
+            } finally {
+                setLoading(false);
+            }
+        };
+        loadStats();
+    }, []);
+
+    const sectionsMapping: Record<string, string> = {
+        '103': 'BNS 103 (Murder)',
+        '115': 'BNS 115 (Assault)',
+        '303': 'BNS 303 (Theft)',
+        '111': 'BNS 111 (Organized Crime)',
+        '126': 'BNS 126 (Nuisance)',
+        '70': 'BNS 70 (Sexual Offenses)',
+        '310': 'BNS 310 (Robbery)',
+        '320': 'BNS 320 (Mischief)'
+    };
+
+    const colorsMapping: Record<string, string> = {
+        '103': 'bg-rose-500',
+        '115': 'bg-amber-500',
+        '303': 'bg-blue-500',
+        '111': 'bg-emerald-500',
+        '126': 'bg-purple-500',
+        '70': 'bg-pink-500',
+        '310': 'bg-orange-500',
+        '320': 'bg-cyan-500'
+    };
+
+    const maxVal = Math.max(...Object.values(stats), 10);
+
     return (
         <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-700">
             {/* Analytics Header */}
@@ -29,15 +71,20 @@ export const AnalyticsPage = () => {
                             <BarChart2 className="w-5 h-5 text-app-primary" />
                             <h3 className="text-sm font-black text-app-text uppercase tracking-widest">BNS Section Frequency</h3>
                         </div>
-                        <span className="text-[10px] font-bold text-app-text-dim uppercase">Last 30 Days</span>
+                        <span className="text-[10px] font-bold text-app-text-dim uppercase">Live Distribution</span>
                     </div>
 
                     <div className="space-y-6">
-                        <AnalyticBar label="BNS 103 (Murder)" value={42} max={250} color="bg-rose-500" />
-                        <AnalyticBar label="BNS 115 (Assault)" value={128} max={250} color="bg-amber-500" />
-                        <AnalyticBar label="BNS 303 (Theft)" value={245} max={250} color="bg-blue-500" />
-                        <AnalyticBar label="BNS 64 (Rape)" value={28} max={250} color="bg-purple-500" />
-                        <AnalyticBar label="BNS 111 (Organized)" value={86} max={250} color="bg-emerald-500" />
+                        {Object.entries(stats).map(([section, count]) => (
+                            <AnalyticBar
+                                key={section}
+                                label={sectionsMapping[section] || `BNS ${section}`}
+                                value={count}
+                                max={maxVal}
+                                color={colorsMapping[section] || 'bg-app-primary'}
+                            />
+                        ))}
+                        {Object.keys(stats).length === 0 && <p className="text-app-text-dim text-xs">Loading archival records...</p>}
                     </div>
                 </div>
 
