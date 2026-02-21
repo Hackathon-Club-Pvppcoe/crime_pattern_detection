@@ -6,7 +6,9 @@ import { Radar, Crosshair, MapPin, Zap, Activity, Shield, Target, AlertTriangle 
 import { MapLayerSelector } from './MapLayerSelector';
 
 // FIX FOR LEAFLET MARKER ICONS
+// @ts-ignore
 import markerIcon from 'leaflet/dist/images/marker-icon.png';
+// @ts-ignore
 import markerShadow from 'leaflet/dist/images/marker-shadow.png';
 
 const DefaultIcon = L.icon({
